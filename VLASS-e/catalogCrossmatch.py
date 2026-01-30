@@ -9,6 +9,11 @@ import pyvo as vo
 import os
 import sys
 
+from astropy.table import Table, Column
+from astropy.io import votable
+
+from astroquery.xmatch import XMatch
+
 ### Collect data from the NASA Exoplanet Archive Stellar Hosts Table
 # I've chosen an arbitrary set of columns to pull from the database
 # In principle this can be slightly altered to return the anti-Table with sources missing a Gaia-DR2 ID
@@ -28,6 +33,11 @@ def getStellarHosts():
     stellarHostTable = tap_service.search(query)
     return stellarHostTable.to_table()
 
+def xmatchStellarHosts():
+    return
+
+
+# The stellar hosts table has duplicate entries, we need em gone. 
 def removeDuplicates(fn):
     # Full Stellar Hosts Catalog for sources with a Gaia DR2 ID
     stellarHosts = pd.read_csv(fn, header=27)
@@ -40,6 +50,11 @@ def removeDuplicates(fn):
     sH_noNulls.to_csv(outpath)
     return sH_noNulls
 
+# Convert to VOTable and write as xml 
+def toVOTable(tabin, outname):
+    outable = votable.from_table(tabin)
+    return votable.writeto(outable, outname)
+    
 
 def main():
     ## First, simplify the stellar host table by removing dupes, saved. 
@@ -47,8 +62,9 @@ def main():
 
     ## New Catalog with no dupes
     fn_sh = '/home/cat-work/work/SETI/cosmicStellarHosts/sH_NoDupes.csv'
-    stellarHosts = pd.read_csv(fn_sh)
-    
+    stellarHosts = Table.read(fn_sh, format='ascii.csv')
+    # toVOTable(stellarHosts, '/home/cat-work/work/SETI/cosmicStellarHosts/sH_NoDupes.vot')
+
     print(stellarHosts[:10])
     return
 
