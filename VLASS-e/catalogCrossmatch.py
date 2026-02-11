@@ -55,6 +55,9 @@ def toVOTable(tabin, outname):
     outable = votable.from_table(tabin)
     return votable.writeto(outable, outname)
     
+def id_to_stellar_params(gaia_dr2_id, stellarHostsTable, crossmatchTable, GaiaSrc, GaiaApsis):
+    # This function would take an ID and the tables, then report the corresponding row from the Gaia Source and Apsis catalogs
+    return
 
 def main():
     ## First, simplify the stellar host table by removing dupes, saved. 
@@ -62,11 +65,23 @@ def main():
 
     ## New Catalog with no dupes
     fn_sh = '/home/cat-work/work/SETI/cosmicStellarHosts/sH_NoDupes.csv'
-    stellarHosts = Table.read(fn_sh, format='ascii.csv')
-    # toVOTable(stellarHosts, '/home/cat-work/work/SETI/cosmicStellarHosts/sH_NoDupes.vot')
+    ## CSV of full S.H. Table
+    stellarHosts = Table.read(fn_sh, format='ascii')
 
-    print(stellarHosts[:10])
+    ## CSV of S.H. within 10 pc
+    stellarHosts10pc = Table.read('/home/cat-work/work/SETI/cosmicStellarHosts/stellarHosts_10pc.csv', format='ascii')
+
+    ## DR2 to DR3 Mapping
+    idCrossMatch = Table.read('/home/cat-work/work/SETI/cosmicStellarHosts/sH_GaiaDR2_DR3_crossmatch.ecsv')
+    dr3Ids = idCrossMatch['dr3_source_id']
+    # Make single list of IDs for TAP crossmatch selection
+    csls = ','.join(map(str,dr3Ids))
+
+    ## Gaia DR3 
+    GaiaSource = Table.read('/home/cat-work/work/SETI/cosmicStellarHosts/sH_GaiaDR3Source_10pc.ecsv')
+    GaiaApsis = Table.read('/home/cat-work/work/SETI/cosmicStellarHosts/sH_GaiaDR3Apsis_10pc.ecsv')
+    
     return
 
 if __name__ == "__main__":
-    main()
+    stellarHosts = main()

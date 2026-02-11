@@ -16,8 +16,7 @@ def vlssrCone(targetName, coneSize):
     
     return result
 
-
-def main(): 
+def target3C84():
     targetName = '3C 84'
     coneSize = 15 * u.degree #deg
     searchResults = vlssrCone(targetName, coneSize)
@@ -31,13 +30,19 @@ def main():
     searchResults[0].add_column(Column(np.around(seps.deg, 4), name='seps', unit='deg'))
     searchResults[0].sort('seps')
     print(searchResults[0])
-    
+    searchResults[0].write('~/testPhaseCalTable.csv')
     return searchResults
+
+def main(): 
+    exoVLSSr = Table.read('/home/cat-work/work/SETI/swarmSETI/exoVLSSr_1.5deg.ecsv')
+    exo10pc = exoVLSSr[exoVLSSr['sy_dist']<10]
+    exo10pc.sort('Sp', reverse=True)
+    print(exo10pc['ra_1', 'dec_1', 'Sp', 'sy_name', 'sy_snum', 'sy_pnum', 'sy_dist'][:10])
+    return
 
 
 if __name__ == "__main__":
-    searchResults = main()
-    searchResults[0].write('~/testPhaseCalTable.csv')
+    main()
 
 
 
