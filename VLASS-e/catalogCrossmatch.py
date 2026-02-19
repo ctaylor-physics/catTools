@@ -18,6 +18,10 @@ from astroquery.xmatch import XMatch
 # I've chosen an arbitrary set of columns to pull from the database
 # In principle this can be slightly altered to return the anti-Table with sources missing a Gaia-DR2 ID
 
+# This is not well organized. I kind of am on the edge of spinning off some of these functions into something for catTools
+
+
+
 # This works here, but I am having trouble with the full stack in async mode... 
 def getStellarHosts():
     # Start TAP Connection
@@ -66,14 +70,16 @@ def main():
     ## New Catalog with no dupes
     fn_sh = '/home/cat-work/work/SETI/cosmicStellarHosts/sH_NoDupes.csv'
     ## CSV of full S.H. Table
-    stellarHosts = Table.read(fn_sh, format='ascii')
+    stellarHosts = pd.read_csv(fn_sh)
+    stellarHostspd = stellarHosts.to_
 
     ## CSV of S.H. within 10 pc
-    stellarHosts10pc = Table.read('/home/cat-work/work/SETI/cosmicStellarHosts/stellarHosts_10pc.csv', format='ascii')
+    stellarHosts10pc = pd.read_csv('/home/cat-work/work/SETI/cosmicStellarHosts/stellarHosts_10pc.csv')
 
     ## DR2 to DR3 Mapping
     idCrossMatch = Table.read('/home/cat-work/work/SETI/cosmicStellarHosts/sH_GaiaDR2_DR3_crossmatch.ecsv')
     dr3Ids = idCrossMatch['dr3_source_id']
+    
     # Make single list of IDs for TAP crossmatch selection
     csls = ','.join(map(str,dr3Ids))
 
@@ -81,7 +87,7 @@ def main():
     GaiaSource = Table.read('/home/cat-work/work/SETI/cosmicStellarHosts/sH_GaiaDR3Source_10pc.ecsv')
     GaiaApsis = Table.read('/home/cat-work/work/SETI/cosmicStellarHosts/sH_GaiaDR3Apsis_10pc.ecsv')
     
-    return
+    return stellarHosts
 
 if __name__ == "__main__":
     stellarHosts = main()
