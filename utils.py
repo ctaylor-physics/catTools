@@ -10,6 +10,9 @@ STYLE_PATH = "/home/cat-work/.config/matplotlib/paper.mplstyle"
 
 ### Functions
 def calcFigSize(name="PRD", columns="twocol"):
+    """
+    Calculates figure sizes based on single column or two column publication style for LaTex friendly plots
+    """
     pt = 1./72.27 # Hundreds of years of history... 72.27 points to an inch.
 
     jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
@@ -23,3 +26,4 @@ def calcFigSize(name="PRD", columns="twocol"):
 
     figs = (my_width, my_width/golden)
     return figs
+
