@@ -27,3 +27,39 @@ def calcFigSize(name="PRD", columns="twocol"):
     figs = (my_width, my_width/golden)
     return figs
 
+
+def get_colors(n, cmap='tab20', as_cmap=False):
+    """
+    Return a list of `n` colors sampled evenly from the given matplotlib colormap.
+
+    Useful when you want to use the same color per-iteration across multiple plots.
+
+    Parameters
+    - n (int): number of distinct colors required.
+    - cmap (str or Colormap): name of a matplotlib colormap or a Colormap instance.
+    - as_cmap (bool): if True, return a ListedColormap instead of a list of RGBA colors.
+
+    Returns
+    - list of RGBA tuples (length n) or a `matplotlib.colors.ListedColormap` when `as_cmap=True`.
+
+    Example
+    colors = get_colors(5, cmap='tab10')
+    for i, c in enumerate(colors):
+        ax.plot(x, y[i], color=c)
+    """
+    if n <= 0:
+        return [] if not as_cmap else mpl.colors.ListedColormap([])
+
+    if isinstance(cmap, str):
+        cmap_obj = mpl.cm.get_cmap(cmap)
+    else:
+        cmap_obj = cmap
+
+    # sample n values evenly across [0, 1)
+    samples = np.linspace(0, 1, n, endpoint=False)
+    colors = [cmap_obj(s) for s in samples]
+
+    if as_cmap:
+        return mpl.colors.ListedColormap(colors)
+    return colors
+
