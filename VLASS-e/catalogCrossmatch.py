@@ -139,6 +139,12 @@ def main():
     # pie_demographics(GaiaApsis)
     
     final_list = pairs_and_antipairs()
+    stellarHosts_40pc = final_list.loc[ final_list.sy_dist < 40 ]
+    stellarHosts_40pc = stellarHosts_40pc.dropna(subset='sy_dist')
+    stellarHosts_40pc.to_csv('/home/cat-work/work/SETI/cosmicStellarHosts/stellarHosts_40pc.csv')
+    # pie_demographics(final_list)
+
+
     return final_list
 
 
