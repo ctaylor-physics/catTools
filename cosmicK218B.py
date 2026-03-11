@@ -232,24 +232,30 @@ def process_Observation_Id(csv_filename, target=None):
     """
     # Setup
     parent_dir = os.path.dirname(csv_filename)
-    obs_df = pd.read_csv(csv_filename)
+    try:
+        obs_df = pd.read_pickle(csv_filename)
+    except:
+        obs_df = pd.read_csv(csv_filename)
+
     incomingObsId = obs_df.observation_id.unique()
     incomingSources = obs_df.source_name.unique()
-    if len(incomingObsId) > 1:
-        raise ValueError(f"more than one observation id contained: {incomingObsId}")
+    
+    # if len(incomingObsId) > 1:
+    #     raise ValueError(f"more than one observation id contained: {incomingObsId}")
+    
     ofilepath = parent_dir+f"/obsId_{incomingObsId[0]}"
 
     # Straighten out the target list
     if target is None:
         raise ValueError('Please provide a target for this query')
-    elif target in ["All","all"]:
+    elif np.isin(target, ["All","all"]):
         target_source = list(obs_df.source_name.unique())
-    elif isinstance(target, list): #list input
-        target_source=target
+    # elif isinstance(target, list): #list input
+    #     target_source=target
     elif isinstance(target,np.ndarray): #array input
         target_source=target.tolist()
-    elif isinstance(target,str): # single value
-        target_source = [target]
+    # elif isinstance(target,str): # single value
+    #     target_source = [target]
     else:
         raise ValueError('i cannot use the structure of the incoming target variable')
     
@@ -295,77 +301,27 @@ def process_Observation_Id(csv_filename, target=None):
 ### "Step Z"
 ## Get the relevant stamp files. 
 
-def plot_src_data(df, target=None, outfile=None):
-    if target is None:
-        srcIds = np.unique(df['source_name'])
-        print('no target provided, plotting all sources')
-        # obsIds = np.unique(df['observation_id'])
-    else:
-        srcIds = str(target)
-
-    colors = utils.get_colors(len(srcIds), cmap='jet')
-
-    # Format plot
-    figs = calcFigSize(name="CQG",columns='onecol')
-    plt.style.use(STYLE_PATH)
-    # Go
-    fig, ax = plt.subplot_mosaic("""
-                                AB
-                                """, sharex=False, sharey=False, figsize=figs)
-    ax['A'].set_title('frequency-snr')
-    ax['A'].set_xlabel("Signal Frequency(MHz)")
-    ax['A'].set_ylabel("Signal SNR")
-
-    ax['B'].set_title('driftrate-snr')
-    ax['B'].set_xlabel("Signal Drift Rate (Hz)")
-    ax['B'].set_ylabel("Signal SNR")
-
-    for i, src in enumerate(srcIds):
-        tempdf = df.loc[( df['source_name'] == src )]
-        print(tempdf)
-        ax['A'].scatter( tempdf['signal_frequency'] ,  tempdf['signal_snr'], color=colors[i], s=1)
-        ax['B'].scatter( tempdf['signal_drift_rate'] ,  tempdf['signal_snr'], color=colors[i], s=1, label = str(src))
-
-    ax['B'].legend()
-    plt.show()
-
-    return
 
 
+def main(args):
+    ### Verify inputs
+    if not os.path.isfile(args.filename):
+        raise OSError('file does not exist')
 
-def main(do_plot=False):
-    """
-    ### From Talon:
-    list_0 = '/home/cat-work/work/SETI/cosmicStellarHosts/stellarHosts_idsList_decCut.csv'
-    df_0 = pd.read_csv(list_0)
-
-    list_10pc = '/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/craig_gaia_hits_v1.csv'
-    df_1 = pd.read_csv(list_10pc)
-    df_1_snr = snr_Thresh(df_1)
-    df_1_snr_dr = dr_Thresh(df_1_snr, 10., -10.)
-    plot_src_data(df_1_snr_dr)
-    """
     ### First set of ObsIds are here:
     ObsId_files = "/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/observationIds_10pc/*.csv"
 
     practice_File = "/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/observationIds_10pc/cat_ObsIdHits_v1_31524.csv"
     trial_target = '2824770686019003904' # one of two gaia ids in this file
     trial_target2 = ['2824770686019003904', '2824770686019004032']
-    obs31524 = pd.read_csv(practice_File)
+    # obs31524 = pd.read_csv(practice_File)
 
-    process_Observation_Id(practice_File, target=trial_target2)
+    process_Observation_Id(args.filename, args.target)
 
-
-    if do_plot:
-        t_unique = pd.read_pickle('/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/observationIds_10pc/ObsId_31524/src2824770686019003904_100snr_50dr_unique.pkl')
-        plot_src_data(t_unique)
     return 
 
 
 if __name__ == "__main__":
-    df = main(do_plot=False)
-
-
     ### Since VLASS observations are continuous slews, you can reject based on other beams formed in the Obs.
     ## I.E. a signal must be unique to a single beam pointing to be interesting, if it is in other beams then it is local (RFI)
     
@@ -379,12 +335,25 @@ if __name__ == "__main__":
     ## Data location: /home/cosmic/dev/COSMIC-VLA-StampInspection/craig_gaia_hits_v1.csv
 
 
-    # parser = argparse.ArgumentParser(
-    #         description='something something find me my alien signals',
-    #         formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    #         )
-    # parser.add_argument('filename', type=str,
-    #                     help='filename to process')
+    parser = argparse.ArgumentParser(
+            description='This code is designed to apply a set of filters to incoming COSMIC-VLASS data to identify interesting candidate signals. ',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            )
+    parser.add_argument('filename', type=str,
+                        help='csv filename to process')
+    # parser.add_argument('-o', '--observation_id', type=str,
+    #                     help='VLASS Observation Id to be processed in this csv.')
+    parser.add_argument('-t', '--target', nargs='+', type=str, default=None, 
+                        help='target or list of targets to be processed. You can also specify "all" to process each source in the csv independently (Use with caution as many Obs Ids have lots of sources within!). ')
+
+    args = parser.parse_args()
+    print(args)
+    main(args)
+
+    # df = main(do_plot=False)
+
+
+    ## For specifically mutually exclusive ("only choose one") options
     # wgroup = parser.add_mutually_exclusive_group(required=False)
     # wgroup.add_argument('-t', '--bartlett', action='store_true',
     #                     help='apply a Bartlett window to the data')
@@ -392,14 +361,6 @@ if __name__ == "__main__":
     #                     help='apply a Blackman window to the data')
     # wgroup.add_argument('-n', '--hanning', action='store_true',
     #                     help='apply a Hanning window to the data')
-    # parser.add_argument('-s', '--skip', type=aph.positive_or_zero_float, default=0.0,
-    #                     help='skip the specified number of seconds at the beginning of the file')
-    # parser.add_argument('-a', '--average', type=aph.positive_float, default=1.0,
-    #                     help='number of seconds of data to average for spectra')
-
-    # args = parser.parse_args()
-    # main(args)
-
 
 
 

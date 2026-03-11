@@ -1,7 +1,10 @@
-###
-# This code hosts the catalog manipulation to assemble the master dataset 
-#for the COSMIC VLASS exoplanet host toy project
-###
+"""
+This code hosts the catalog manipulation to assemble the master dataset 
+for the COSMIC VLASS exoplanet host toy project
+
+FYI This doesn't work very good. I should fix that...
+I ended up doing most of the leg work with just topcat
+"""
 
 import pandas as pd
 import numpy as np
@@ -14,6 +17,9 @@ from astropy.table import Table, Column
 from astropy.io import votable
 
 from astroquery.xmatch import XMatch
+from astroquery.gaia import Gaia
+
+stellarClassSort = {'M':3500, 'K':5000, 'G':6000, 'F':7500, 'unknown':np.inf, 'O':40000, 'A':10000, 'B':30000}
 
 ### Collect data from the NASA Exoplanet Archive Stellar Hosts Table
 # I've chosen an arbitrary set of columns to pull from the database
@@ -36,6 +42,7 @@ def getStellarHosts():
         """
     stellarHostTable = tap_service.search(query)
     return stellarHostTable.to_table()
+
 
 ## Step 2?
 # The stellar hosts table has duplicate entries, we need em gone. 
@@ -70,9 +77,11 @@ def load_catalogs():
     ## First, simplify the stellar host table by removing dupes, saved. 
     # stellarHosts = removeDuplicates('/home/cat-work/work/SETI/cosmicStellarHosts/stellarHostsSeedTable.csv')
 
-    ## New Catalog with no dupes
+    ## New Catalog with no dupes, 4491 sources included
     fn_sh = '/home/cat-work/work/SETI/cosmicStellarHosts/sH_NoDupes.csv'
     stellarHosts = pd.read_csv(fn_sh)
+    gaiaSourceXmatch = pd.read_csv('/home/cat-work/work/SETI/cosmicStellarHosts/gaia_dr3_apsis_matches_table.csv') # only 4474 of the above, need to fix
+
     
     ### Load catalogs: 
     # CSV of S.H. within 10 pc
@@ -90,6 +99,21 @@ def load_catalogs():
     
     return stellarHosts, stellarHosts10pc, idCrossMatch, GaiaSource, GaiaApsis
 
+#placeholder to help me keep track of what sources are missing from the complete overlap of stellar hosts and gaia
+def pairs_and_antipairs():
+    fn_sh = '/home/cat-work/work/SETI/cosmicStellarHosts/sH_NoDupes.csv'
+    stellarHosts = pd.read_csv(fn_sh)
+    gaiaSourceXmatch = pd.read_csv('/home/cat-work/work/SETI/cosmicStellarHosts/gaia_dr3_apsis_matches_table.csv') # only 4474 of the above, need to fix
+    # The above catalogs overlap ALL sources in the Xmatch df, but missing 17 in stellarHosts
+    antipairs = stellarHosts[~stellarHosts.gaia_dr2_id.isin(gaiaSourceXmatch['gaia_dr2_id'])]
+    antipairs_matches = pd.read_csv('/home/cat-work/work/SETI/cosmicStellarHosts/antipairs_matches.csv')
+    still_missing = antipairs[~antipairs.gaia_dr2_id.isin(antipairs_matches['gaia_dr2_id'])]
+    last_ones = pd.read_csv('/home/cat-work/work/SETI/cosmicStellarHosts/last_ones.csv')
+    final_list = pd.concat([gaiaSourceXmatch, antipairs_matches, last_ones])
+    return final_list
+
+
+# Step 
 def pie_demographics(gaia_apsis_table):
     """
     Make a pie chart of the stellar classes present in the sample
@@ -98,25 +122,29 @@ def pie_demographics(gaia_apsis_table):
     """
     # Form here: 
     count = gaia_apsis_table["spectraltype_esphs"].value_counts()
-    indices = count.index.to_list()
-    vals = count.values.astype(str)
+    sortcount = count.sort_index(key=lambda x: x.map(stellarClassSort), ascending=False)
+    indices = sortcount.index.to_list()
+    vals = sortcount.values.astype(str)
     labels = [f"{a} - {b}" for a,b in zip(indices, vals)]
     
     fig, ax = plt.subplots()
-    ax.pie(count, labels=labels)
+    ax.pie(sortcount, labels=labels, startangle=0.0)
     plt.show()
 
 
     return
 
 def main():
-    stellarHosts, stellarHosts10pc, idCrossMatch, GaiaSource, GaiaApsis = load_catalogs()
-    return
+    # stellarHosts, stellarHosts10pc, idCrossMatch, GaiaSource, GaiaApsis = load_catalogs()
+    # pie_demographics(GaiaApsis)
+    
+    final_list = pairs_and_antipairs()
+    return final_list
 
 
     
 if __name__ == "__main__":
-    main()
+    final_list = main()
 
 
 
