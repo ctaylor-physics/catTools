@@ -17,6 +17,11 @@ import time
 raw_fn = '/home/cat-work/work/SETI/K2-18b/K2-18b-hits_02-14-24-2.pkl'
 single_day_fn = '/home/cat-work/work/SETI/K2-18b/K2-18b-hits_mjd60220.pkl'
 
+def is_rfi(frequency, ranges):
+    # Check if frequency is inside any RFI range
+    # From Chenoa Tremblay k2-18b
+    return np.any((frequency >= ranges['start_frequency']) & (frequency <= ranges['stop_frequency']))
+
 ### "Step 0"
 def find_ObsId(df, outfile=None):
     """
@@ -45,12 +50,21 @@ def find_ObsId(df, outfile=None):
     return 
 
 ### "Step 1"
-def rfi_Screen(df, rfi_frequencies):
+def rfi_Clean(df):
     """
-    This function is intended to be a preliminary RFI screen for incoming data.
-        I need to get this from Chenoa or somewhere...
+    This function is a preliminary RFI screen for incoming data.
+        It is from Chenoa's K2-18b code
     """
-    return #cleaned_df
+    ## S-band RFI From CRICKETS project
+    # Load cleaned RFI CSV
+    rfi_fn = '/home/cat-work/work/SETI/cosmicStellarHosts/Full_Crickets_CleanedUp.pkl'
+    rfi_ranges = pd.read_pickle(rfi_fn).iloc[:, 3:] #drops kurtosis column
+
+    # Build and apply mask
+    mask = df['signal_frequency'].apply(lambda f: not is_rfi(f,rfi_ranges))
+    df_clean = df[mask].reset_index(drop=True)
+
+    return df_clean
 
 ### "Step 2"
 def snr_Thresh(df, upper=100, lower=10):
@@ -237,6 +251,14 @@ def process_Observation_Id(csv_filename, target=None):
     except:
         obs_df = pd.read_csv(csv_filename)
 
+    ## Step 1
+    #RFI Filter
+    try:
+        obs_rfi = pd.read_pickle(csv_filename)
+    except:
+        obs_rfi = rfi_Clean(obs_df)
+        obs_rfi.to_pickle(f"{os.path.splitext(csv_filename)[0]}_rfi.pkl")
+
     incomingObsId = obs_df.observation_id.unique()
     incomingSources = obs_df.source_name.unique()
     
@@ -248,10 +270,10 @@ def process_Observation_Id(csv_filename, target=None):
     # Straighten out the target list
     if target is None:
         raise ValueError('Please provide a target for this query')
+    elif isinstance(target, list): #list input
+        target_source=target
     elif np.isin(target, ["All","all"]):
         target_source = list(obs_df.source_name.unique())
-    # elif isinstance(target, list): #list input
-    #     target_source=target
     elif isinstance(target,np.ndarray): #array input
         target_source=target.tolist()
     # elif isinstance(target,str): # single value
