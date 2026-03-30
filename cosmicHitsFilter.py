@@ -290,7 +290,7 @@ def process_Observation_Id(csv_filename, target=None):
     print('#########################################')
     t0 = time.perf_counter()
     for src in target_source:
-        process_source(obs_df,
+        process_source(obs_rfi,
                         src,
                         out_dir = ofilepath,
                         snr_thresh = (10, 100),
@@ -331,11 +331,11 @@ def main(args):
         raise OSError('file does not exist')
 
     ### First set of ObsIds are here:
-    ObsId_files = "/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/observationIds_10pc/*.csv"
+    # ObsId_files = "/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/observationIds_10pc/*.csv"
 
-    practice_File = "/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/observationIds_10pc/cat_ObsIdHits_v1_31524.csv"
-    trial_target = '2824770686019003904' # one of two gaia ids in this file
-    trial_target2 = ['2824770686019003904', '2824770686019004032']
+    # practice_File = "/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/observationIds_10pc/cat_ObsIdHits_v1_31524.csv"
+    # trial_target = '2824770686019003904' # one of two gaia ids in this file
+    # trial_target2 = ['2824770686019003904', '2824770686019004032']
     # obs31524 = pd.read_csv(practice_File)
 
     process_Observation_Id(args.filename, args.target)
@@ -366,7 +366,7 @@ if __name__ == "__main__":
     # parser.add_argument('-o', '--observation_id', type=str,
     #                     help='VLASS Observation Id to be processed in this csv.')
     parser.add_argument('-t', '--target', nargs='+', type=str, default=None, 
-                        help='target or list of targets to be processed. You can also specify "all" to process each source in the csv independently (Use with caution as many Obs Ids have lots of sources within!). ')
+                        help='target or a space delimited list of targets to be processed or you can specify "all" to process each source in the csv independently (Use with caution as many Obs Ids have lots of sources within!). ')
 
     args = parser.parse_args()
     print(args)

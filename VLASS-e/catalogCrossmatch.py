@@ -100,6 +100,7 @@ def load_catalogs():
     return stellarHosts, stellarHosts10pc, idCrossMatch, GaiaSource, GaiaApsis
 
 #placeholder to help me keep track of what sources are missing from the complete overlap of stellar hosts and gaia
+# Superceded by: final_list = pd.read_pickle('/home/cat-work/work/SETI/cosmicStellarHosts/final_Gaia_cat_list.pkl')
 def pairs_and_antipairs():
     fn_sh = '/home/cat-work/work/SETI/cosmicStellarHosts/sH_NoDupes.csv'
     stellarHosts = pd.read_csv(fn_sh)
@@ -138,12 +139,12 @@ def main():
     # stellarHosts, stellarHosts10pc, idCrossMatch, GaiaSource, GaiaApsis = load_catalogs()
     # pie_demographics(GaiaApsis)
     
-    final_list = pairs_and_antipairs()
-    stellarHosts_40pc = final_list.loc[ final_list.sy_dist < 40 ]
-    stellarHosts_40pc = stellarHosts_40pc.dropna(subset='sy_dist')
-    stellarHosts_40pc.to_csv('/home/cat-work/work/SETI/cosmicStellarHosts/stellarHosts_40pc.csv')
+    final_list = pd.read_pickle('/home/cat-work/work/SETI/cosmicStellarHosts/final_Gaia_cat_list.pkl')
     # pie_demographics(final_list)
 
+    # New Lists: 
+    under10pc = pd.read_pickle("/home/cat-work/work/SETI/cosmicStellarHosts/under10pc_full.pkl")
+    under40pc = pd.read_pickle("/home/cat-work/work/SETI/cosmicStellarHosts/under40pc_full.pkl")
 
     return final_list
 

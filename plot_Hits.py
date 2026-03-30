@@ -5,6 +5,8 @@ import argparse
 import glob
 from utils import STYLE_PATH, calcFigSize, get_colors
 
+RFI_PATH = "/home/cat-work/work/SETI/cosmicStellarHosts/Full_Crickets_CleanedUp.pkl"
+
 axes_labels = {'signal_frequency': "Signal Frequency (MHz)",
                 'signal_drift_rate': "Signal Drift Rate (Hz)",
                 'signal_snr': "Signal Signal-to-Noise"}
@@ -22,9 +24,12 @@ def plot_src_data(filenames, outfile=None):
     y_axis_data = ['signal_snr']
     # Go
     fig, ax = plt.subplots(len(y_axis_data),len(x_axis_data), figsize=figs, constrained_layout=True)
+    total_hits = 0
     for i in range(len(filenames)):
         print(f"Plotting {filenames[i]}")
         obs_data = pd.read_pickle(filenames[i])
+        total_hits += obs_data.shape[0]
+        print(f"({obs_data.shape[0]}, {total_hits})")
         sources = obs_data.source_name.unique()
         
         for k in range(len(x_axis_data)):
@@ -33,10 +38,23 @@ def plot_src_data(filenames, outfile=None):
             ax[k].set_ylabel(axes_labels[y_axis_data[0]])
             ax[k].scatter(obs_data[x_axis_data[k]], obs_data[y_axis_data[0]], color=colors[i], s=1, label=str(sources)) #maybe sources[0]
 
+
+    # Plot RFI Bars:
+    # rfi = pd.read_pickle(RFI_PATH)
+    # for _,row in rfi.iterrows():
+    #     ax[0].axvspan(
+    #         row['start_frequency'], 
+    #         row['stop_frequency'],
+    #         color='gray',
+    #         alpha=0.1,
+    #     )
+
+
     # Temporary axes limits:
     ax[0].set_xlim(2000, 4000)
     ax[1].set_xlim(-50, 50)
-    ax[-1].legend(frameon=True, facecolor='lightgrey',framealpha=0.5, fontsize=2)
+    ax[-1].legend(frameon=True, facecolor='lightgrey',framealpha=0.5, fontsize=4)
+    
 
     if args.save_filepath:
         plt.savefig(args.save_filepath)
