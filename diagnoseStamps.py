@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from cosmic_utils import look_for_combs, log_with_pandas
 from scipy.stats import median_abs_deviation
 from seticore import viewer
-
+from cosmic_database_analysis import sarfi
 
 def snr_windows(data, mask): #mask should be stamp.signal_mask()
     """
@@ -40,7 +40,7 @@ def snr_windows(data, mask): #mask should be stamp.signal_mask()
 
     return (edge_snr, core_snr, signal)
 
-def find_outlier_antennas(stamp_path, hit_enum, stamp_enum, out_dir = None):
+def find_outlier_antennas(obs_info, out_dir = None):
 
     """
     For a single stamp this function makes a comparison of the SNR measured between each antenna
@@ -54,21 +54,20 @@ def find_outlier_antennas(stamp_path, hit_enum, stamp_enum, out_dir = None):
                        1 = combs detected, questionable calibration likely
                        2 = signal possibly detected
     """
+
     ## Fetch Stamp
-    stamps_gen = viewer.read_stamps(stamp_path, find_recipe=True)
+    stamps_gen = viewer.read_stamps(obs_info.stamp_file_uri, find_recipe=True)
     for index, stamp in enumerate(stamps_gen):
-        if index == stamp_enum:
+        if index == obs_info.stamp_file_local_enum:
             assert(stamp != None)
             assert(stamp.recipe != None)
             break
 
     ## Get some filename information
-    srcName = stamp.stamp.sourceName
-    hit_fle = str(hit_enum)
-    stamp_fle = str(stamp_enum)
+    srcName = obs_info.source_name
+    print(f"stamp source name: {srcName}")
     out_fn = os.path.join(out_dir,
-                          f"{srcName}_hit{hit_fle}_stamp{stamp_fle}")
-
+                          f"{srcName}_id{obs_info.id}_{round(obs_info.signal_frequency,5)}MHz")
     ## ant_pow[antenna][timestep][channel] Sums along pol and real/image axes
     ant_pow = np.square(stamp.real_array()).sum(axis=(2, 4)).transpose(2,0,1) 
     sig_mask = stamp.signal_mask()
@@ -100,7 +99,10 @@ def find_outlier_antennas(stamp_path, hit_enum, stamp_enum, out_dir = None):
     if np.any(single_bad_ants):
         signal_score = False
         antenna_score[np.argwhere(single_bad_ants)[0]] = 0
-        print(f"hot antenna detected")
+        print(f"hot antenna detected, plotting")
+
+    sarfi_score = sarfi.is_SARFI(stamp)
+
 
     if out_dir is not None:
         # segregate antennas
@@ -127,25 +129,25 @@ def find_outlier_antennas(stamp_path, hit_enum, stamp_enum, out_dir = None):
         stamp.show_antennas(title=f"{srcName}", save_to = out_fn + "_show_antennas.png")
     
     outliers = {"source_name": srcName,
-                "hit_file_local_enumeration": hit_fle,
-                "stamp_file_local_enumeration": stamp_fle,
+                "id": obs_info.id,
                 "antenna_score": antenna_score,
                 "total_score": antenna_score.sum(),
                 "signal_score": signal_score,
-                "stamp_file_uri": stamp_path,
+                "sarfi_score": sarfi_score,
+                "stamp_file_uri": obs_info.stamp_file_uri,
                 }
     return outliers #number of plausible antennas, score of signal
-
+"""
 def practice_data():
-    """
-    Data for the stamps is stored: 
-        data[timestep][channel][polarization][antenna][real or imag] = pracStamp.real_array()
+    
+    # Data for the stamps is stored: 
+    #    data[timestep][channel][polarization][antenna][real or imag] = pracStamp.real_array()
 
-    The test stamps are 33: Voyager signal in all ants
-                        34: Ant 1 has a bright signal but the others not-so-much, also a 24, 26, 28 look bad
-                        25: Obvious comb-like features in antenna 24, 26
+    #The test stamps are 33: Voyager signal in all ants
+    #                    34: Ant 1 has a bright signal but the others not-so-much, also a 24, 26, 28 look bad
+    #                    25: Obvious comb-like features in antenna 24, 26
 
-    """
+    
     # Voyager 14-Aug-2025 21:57:29.3 - 21:58:02.9 
     DIR = '/home/cat-work/work/SETI/stampTutorial/voyager'
     voyager_fn = "TCOS0001_sb49105488_1_1.60901.90559458333.4.1.AC.C480.0000.raw.seticore.0000.stamps" 
@@ -168,31 +170,31 @@ def practice_data():
                                         out_dir = DIAG_PATH)
         log_with_pandas(outliers,
                         log_fn)
+"""
 
 def main():
-    DIR = '/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/observationIds_10pc'
-    STAMPS_FN1 = os.path.join(DIR, "uniqueFinalHits10pc_scan_ids_v3.storage1.stamp_rels.csv")
-    STAMPS_FN2 = os.path.join(DIR, "uniqueFinalHits10pc_scan_ids_v3.storage2.stamp_rels.csv")
-    OBS_INFO_FN = os.path.join(DIR, "uniqueFinalHits10pc_scan_ids_v3.csv")
+    # This is on cosmic-storage-1
+    DIR = '/srv/cosmicfs0/scratch/ctaylor/'
+    # STAMPS_FN1 = os.path.join(DIR, "uniqueFinalHits10pc_scan_ids_v3.storage1.stamp_rels.csv")
+    # STAMPS_FN2 = os.path.join(DIR, "uniqueFinalHits10pc_scan_ids_v3.storage2.stamp_rels.csv")
+    OBS_INFO_FN = os.path.join(DIR, "uniqueFinalHits10pc_storage1.csv")
 
     DIAG_PATH = os.path.join(DIR, 'diagnostic_plots')
     os.makedirs(DIAG_PATH, exist_ok=True)
     log_fn = os.path.join(DIAG_PATH, "stamp_diagnostics.csv")
 
 
-    stamps1 = pd.read_csv(STAMPS_FN1)
-    stamps2 = pd.read_csv(STAMPS_FN2)
-    observation_info = pd.read_csv(OBS_INFO_FN)
+    #stamps1 = pd.read_csv(STAMPS_FN1)
+    # stamps2 = pd.read_csv(STAMPS_FN2)
+    obs_info = pd.read_csv(OBS_INFO_FN)
 
-    for path,enum_s,enum_h in zip( stamps1.stamp_file_uri.iloc[:1], stamps1.stamp_file_local_enum.iloc[:1], stamps1.hit_file_local_enum.iloc[:1] ):
-        outliers = find_outlier_antennas(stamp_path = path,
-                                        stamp_enum = enum_s,
-                                        hit_enum = enum_h,
-                                        out_dir = DIAG_PATH)
-        log_with_pandas(outliers,
-                        log_fn)
+    # for path,enum_s,enum_h in zip( stamps1.stamp_file_uri.iloc[1:2],
+    #                                stamps1.stamp_file_local_enum.iloc[1:2],
+    #                                stamps1.hit_file_local_enum.iloc[1:2] ):
 
-
+    for i, row in obs_info.iterrows():
+        outliers = find_outlier_antennas(row, out_dir = DIAG_PATH)
+        log_with_pandas(outliers,log_fn)
 
 
 if __name__ == "__main__":
