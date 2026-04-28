@@ -47,24 +47,28 @@ def are_tables_the_same(fn1, fn2):
         print('non-identical dataframes')
     return
 
-def calculate_COSMIC_EIRP(distance):
+def calculate_EIRP(S_jy, BW, distance):
     """
     Give a distance, get an estimated EIRP and ratio to Arecibo transmitter
+    Sensitivity in Janskys (S_jy) for a given observing config
+    Bandwidth in Hz (BW)
     """
-    S_vla = 13.92 * 10**(-26)# Jy = 1 * 10^-26 W/Hz/m^2
-    BW = 8 # Hz
+    S_jy = S_jy * 10**(-26)# Jy = 1 * 10^-26 W/Hz/m^2
     dist = distance *  3.08567e16 # 1 pc = 3.085 * 10^16 m
-    Fmin = S_vla*BW
+    Fmin = S_jy*BW
     EIRP = 4 * np.pi * Fmin * dist**2 # Watts
     perArecibo = EIRP / (2e13) # Unitless
 
-    print(f"Equivalent Isotropic Radiated Power: {EIRP} W")
+    print(f"Equivalent Isotropic Radiated Power: {EIRP:e} W")
     print(f"Ratio of EIRP/Arecibo: {perArecibo}")
 
-    ### Maximum distance to detect Arecibo:
-    # singleAreciboDistance = np.sqrt((2e13)/(4*np.pi*Fmin)) / (3.08567e16) # pc
-    # print(f"Single Arecibo Distance: {singleAreciboDistance} pc")
+    ## Maximum distance to detect Arecibo:
+    singleAreciboDistance = np.sqrt((2e13)/(4*np.pi*Fmin)) / (3.08567e16) # pc
+    print(f"Single Arecibo Distance: {singleAreciboDistance} pc")
     return
+
+def johnson_EIRP(SEFD, BW, distance, t):
+    print(f"{(10*4*np.pi*(10 * 3.08567e16)**2 )*(9200 * 10**(-26)) * np.sqrt(3/(2*600)):e}")
 
 def look_for_combs(stamp_data, name, thresh, cepstrum_offset, out_fn = None):
     """

@@ -130,11 +130,12 @@ def find_outlier_antennas(obs_info, out_dir = None):
     
     outliers = {"source_name": srcName,
                 "id": obs_info.id,
+                "freq": obs_info.signal_frequency,
                 "antenna_score": antenna_score,
                 "total_score": antenna_score.sum(),
                 "signal_score": signal_score,
                 "sarfi_score": sarfi_score,
-                "stamp_file_uri": obs_info.stamp_file_uri,
+                "stamp_file_uri": obs_info.stamp_file_uri, # I should also add the show_antennas filename os.path.basename()
                 }
     return outliers #number of plausible antennas, score of signal
 """
