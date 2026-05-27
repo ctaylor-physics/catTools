@@ -43,6 +43,8 @@ df["A2"] = df["A2_x1e-3"] * 1e-3
 df["A4"] = df["A4_x1e-7"] * 1e-7
 df["A6"] = df["A6_x1e-10"] * 1e-10
 
+# df.to_csv('/home/cat-work/work/SETI/vla_Sband_beam.csv')
+
 # Test for center of the band
 row = df.iloc[7]
 

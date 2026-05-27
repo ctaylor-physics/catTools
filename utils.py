@@ -63,3 +63,5 @@ def get_colors(n, cmap='tab20', as_cmap=False):
         return mpl.colors.ListedColormap(colors)
     return colors
 
+def normalize(sequence):
+    return ( sequence - np.min(sequence) ) / (np.max(sequence) - np.min(sequence))

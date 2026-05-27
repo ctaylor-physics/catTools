@@ -139,13 +139,22 @@ def main():
     # stellarHosts, stellarHosts10pc, idCrossMatch, GaiaSource, GaiaApsis = load_catalogs()
     # pie_demographics(GaiaApsis)
     
+    # ALL STARS REGARDLESS OF DISTANCE OR POSITION
     final_list = pd.read_pickle('/home/cat-work/work/SETI/cosmicStellarHosts/final_Gaia_cat_list.pkl')
     # pie_demographics(final_list)
 
-    # New Lists: 
+    # New Lists: with distance AND declination cut included
     under10pc = pd.read_pickle("/home/cat-work/work/SETI/cosmicStellarHosts/under10pc_full.pkl")
-    under40pc = pd.read_pickle("/home/cat-work/work/SETI/cosmicStellarHosts/under40pc_full.pkl")
+    under40pc = pd.read_pickle("/home/cat-work/work/SETI/cosmicStellarHosts/under40pc_sample/under40pc_full.pkl")
 
+    # Final Stellar Hosts:
+    stellarHosts = pd.read_csv('/home/cat-work/work/SETI/cosmicStellarHosts/sH_NoDupes.csv').drop(['Unnamed: 0.1', 'Unnamed: 0'], axis=1)
+    craig_10pc_hits = pd.read_csv('/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/craig_10pc_hits.csv')
+    unique_sources = craig_10pc_hits.source_name.unique()
+
+    stellarHosts_final = stellarHosts[stellarHosts.Gaia_ID.astype(str).isin(unique_sources.astype(str))]
+    latex_table = stellarHosts_final[['sy_name', 'sy_snum', 'sy_pnum', 'rastr', 'decstr', 'sy_dist']]
+    
     return final_list
 
 

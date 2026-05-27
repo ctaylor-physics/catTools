@@ -118,3 +118,5 @@ def log_with_pandas(data_dict, file_path=None):
             new_data_df.to_csv(file_path, mode='a', index=False, header=False)
         else:
             new_data_df.to_csv(file_path, mode='w', index=False, header=True)
+
+
