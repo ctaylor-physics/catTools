@@ -157,6 +157,8 @@ def plot_2ant_corr(stamp,row_info, ant1, ant2):
     first_max = np.max(first_image)*1.1
 
     ## Format plot
+    print(f"full_frequency {stamp.stamp.signal.frequency} MHz")
+
     figs = calcFigSize(name="PRD",columns='twocol')
     plt.style.use(STYLE_PATH2)
 
@@ -167,26 +169,26 @@ def plot_2ant_corr(stamp,row_info, ant1, ant2):
     axs[0].imshow(stamp_power[ant1_inx].T, origin='lower', vmin = first_min, vmax = first_max)
 
     # set up ticks
-    yticks = np.arange(0,stamp_shape[2],stamp_shape[2]//8)
+    yticks = np.arange(0,stamp_shape[2],stamp_shape[2]//5)
     axs[0].set_yticks(yticks)
-    axs[0].set_yticklabels([f"{tick*stamp.stamp.tsamp:.2f}" for tick in yticks] , fontsize=4)
-    axs[0].set_ylabel("Time (s)") # , fontsize=4)
+    axs[0].set_yticklabels([f"{tick*stamp.stamp.tsamp:.2f}" for tick in yticks] , fontsize=8)
+    axs[0].set_ylabel("Time (s)", fontsize=8)
 
-    xticks = np.arange(0,stamp_shape[1], stamp_shape[1]//8)
+    xticks = np.arange(0,stamp_shape[1], stamp_shape[1]//5)
     axs[0].set_xticks(xticks)
-    axs[0].set_xticklabels([f"{tick*stamp.stamp.foff*1e6:.1f}" for tick in xticks], rotation=-25, fontsize=4)
-    axs[0].set_xlabel(f"Frequency\n(kHz+{middle*stamp.stamp.foff + stamp.stamp.fch1:.5f} MHz)") # , fontsize=4)
+    axs[0].set_xticklabels([f"{tick*stamp.stamp.foff*1e6:.1f}" for tick in xticks], rotation=-25, fontsize=8)
+    axs[0].set_xlabel(f"Frequency\n(kHz+{middle*stamp.stamp.foff + stamp.stamp.fch1:.5f} MHz)", fontsize=9)
 
     
     ### ant2
     axs[1].set_title(f'Stamp: {ant2}') # , fontsize=6)
     axs[1].imshow(stamp_power[ant2_inx].T, origin='lower', vmin = first_min, vmax = first_max)
     axs[1].set_yticks(yticks)
-    axs[1].set_yticklabels([f"{tick*stamp.stamp.tsamp:.2f}" for tick in yticks], fontsize=4)
-    # axs[1].set_ylabel("Time (s)") # , fontsize=4)
+    axs[1].set_yticklabels([f"{tick*stamp.stamp.tsamp:.2f}" for tick in yticks], fontsize=8)
+    axs[1].set_yticks([])
     axs[1].set_xticks(xticks)
-    axs[1].set_xticklabels([f"{tick*stamp.stamp.foff*1e6:.1f}" for tick in xticks], rotation=-25, fontsize=4)
-    axs[1].set_xlabel(f"Frequency\n(kHz+{middle*stamp.stamp.foff + stamp.stamp.fch1:.5f} MHz)") # , fontsize=4)
+    axs[1].set_xticklabels([f"{tick*stamp.stamp.foff*1e6:.1f}" for tick in xticks], rotation=-25, fontsize=8)
+    axs[1].set_xlabel(f"Frequency\n(kHz+{middle*stamp.stamp.foff + stamp.stamp.fch1:.5f} MHz)", fontsize=9)
 
     ### ant3
     plt.tick_params(axis='both', bottom=False, left=False)
@@ -200,15 +202,16 @@ def plot_2ant_corr(stamp,row_info, ant1, ant2):
     corr_cmap = plt.cm.plasma
     corr_cmap.set_bad(color='grey', alpha=0.5)
 
-    axs[2].set_title(f'Antenna Correlation Matrix') # , fontsize=6)
+    axs[2].set_title(f'Antenna Correlation Matrix') # , fontsize=8)
     im_corr = axs[2].imshow(corr, origin='lower', vmin=0, vmax=1, cmap = corr_cmap)
-    axs[2].set_xlabel(f"Antenna Number") # , fontsize=4)
-    axs[2].set_ylabel(f"Antenna Number") # , fontsize=4)
+    axs[2].set_xlabel(f"Antenna Number", fontsize=9)
+    axs[2].set_ylabel(f"Antenna Number", fontsize=9)
     axs[2].set_xticks(np.arange(0,stamp_shape[0],1))
-    axs[2].set_xticklabels(short_ant_names2, fontsize=4)
+    axs[2].set_xticklabels(short_ant_names2, fontsize=8)
     axs[2].set_yticks(np.arange(0,stamp_shape[0],1))
-    axs[2].set_yticklabels(short_ant_names2, rotation=90, fontsize=4)
+    axs[2].set_yticklabels(short_ant_names2, rotation=90, fontsize=8)
     cb = plt.colorbar(im_corr, ax=axs[2], fraction=0.05, pad=0.04)
+    cb.ax.tick_params(labelsize=8)
     plt.savefig(os.path.join(PLOT_PATH, f'paper_plots/{row_info.source_name_oi}_{ant1}_{ant2}_2.png'))
     plt.show()
 
@@ -355,17 +358,22 @@ def plot_coherent_timeseries(stamp, src_name):
     plt.style.use(STYLE_PATH)
 
     fig, ax = plt.subplots(1,1)
-    ax.set_title(f"Gaia ID {src_name} - {stamp.stamp.signal.frequency:.3f}")
+    ax.set_title(f"Gaia ID {src_name} - {stamp.stamp.signal.frequency:.3f} MHz", fontsize=14)
     ax.plot(coh_norm, 'k', label='Coherent')
     ax.plot(incoh_norm, 'b', label='Incoherent')
-    ax.plot(np.arange(64), power_r, c='darkorange', linewidth=1.5, label='S-Band Primary Beam', zorder=1)
+    ax.plot(np.arange(64), power_r, c='darkorange', linewidth=1.5, label='S-Band\n Primary Beam', zorder=1)
 
-    ax.set_ylabel('Normalized Power')
-    ax.set_xlabel('Elapsed Time (s)')
-    ax.set_xticks(np.arange(9) * 8, labels=np.arange(9).astype(str))
-    ax.legend()
+    ax.set_ylabel('Normalized Power', fontsize=14)
+    ax.set_xlabel('Elapsed Time (s)', fontsize=14)
+    ax.set_xticks(np.arange(9) * 8, labels=np.arange(9).astype(str), fontsize=12)
+    ax.set_yticks(np.linspace(0,1,5),labels=np.linspace(0,1,5).astype(str), fontsize=12)
+    ax.legend(fontsize=10)
     plt.savefig(os.path.join(PLOT_PATH, f'paper_plots/{src_name}_primary_beam_plot.png'))
     plt.show()
+
+    print('fontsize x-label', ax.xaxis.label.get_fontsize())
+    print('fontsize title', ax.title.get_fontsize())
+    print('fontsize tick labels', ax.xaxis.get_tick_params())
     
     
     return
@@ -485,7 +493,7 @@ for i,row in obs_info_final.iterrows():
 
 ## Paper Plots
 plot_2ant_corr(final_stamps[3], obs_info_final.iloc[3], 'ea01', 'ea15')
-plot_2ant_corr(final_stamps[5], obs_info_final.iloc[5], 'ea27', 'ea28')
+# plot_2ant_corr(final_stamps[5], obs_info_final.iloc[5], 'ea27', 'ea28')
 # plot_coherent_timeseries(final_stamps[0], obs_info_final.iloc[0].source_name_oi)
 
 

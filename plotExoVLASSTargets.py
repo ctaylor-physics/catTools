@@ -62,35 +62,6 @@ def main():
     title = 'LWA Swarm Sources'
 
     ### Plotting Now!
-    ## Blocky Robinson projection
-    # # Cartopy
-    # trnsf = ccrs.Robinson()
-    # fmt = FuncFormatter(lambda x,pos: round(Longitude(x, unit=u.deg).hour))
-
-    # fig2,ax = plt.subplots(figsize=figs, subplot_kw={'projection':trnsf}) #layout='constrained')
-
-    # ax.set_extent([-180, 180, -40,90],crs=ccrs.PlateCarree())
-    # gl = ax.gridlines(draw_labels=True, x_inline=False, y_inline=False, linewidth=0.4,alpha=0.7, linestyle='--')
-    # gl.xlocator = mticker.FixedLocator(np.arange(-180,180,15))
-    # gl.top_labels = False
-    # gl.xformatter=fmt
-    # gl.yformatter = LatitudeFormatter(direction_label=False)
-    # gl.xlabel_style = {'fontsize': 8}
-    # gl.ylabel_style = {'fontsize': 8}
-
-
-    # ax.xaxis.set_major_formatter(lambda x,pos: Angle(x).hour)
-    # #ax.set_title(title)
-    # ax.scatter(main_targs.ra.value,main_targs.dec.value,c='k',label='Observed',s=1, transform=ccrs.PlateCarree())
-    # ax.scatter(extra_targs.ra.value, extra_targs.dec.value, c='r', label='Unobserved',s=1, transform=ccrs.PlateCarree())
-    # ax.set_title('LWA Swarm Calibrator Survey Targets')
-
-    # plt.gcf().text(0.465, 0.22, 'RA (J2000)', fontsize=8)
-    # plt.gcf().text(0.055, 0.42,'DEC (J2000)', rotation='vertical', fontsize=8)
-    # plt.legend(loc=(0.9,0.9))
-    # # plt.savefig('/home/cat-work/pictures/swarmsources_robinson_legend5.png')
-    # plt.show()
-
     ## Aitoff projection (works)
     mtra = np.radians(main_targs.ra.value)
     mtra[mtra>np.pi] -= 2*np.pi
@@ -114,40 +85,12 @@ def main():
     ax.set_xlabel('Right Ascension')
     ax.set_ylabel('Declination')
     ax.grid(True)
-    plt.legend(loc=(0.9,0.9))
-    plt.savefig("/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/observationIds_10pc/paper_plots/exoVLASS_target_map2.png")
+    plt.legend(loc=(0.9,0.9), fontsize=8)
+    plt.savefig("/home/cat-work/work/SETI/cosmicStellarHosts/databaseHits/observationIds_10pc/paper_plots/exoVLASS_target_map3.png")
     plt.show()
 
 
     return main_targs, extra_targs
-
-def replot():
-    fn = '/home/cat-work/pictures/swarmsources_robinson_legend.png'
-    image = np.asarray(Image.open(fn))
-    title = 'LWA Swarm Targets'
-
-    ### Plot Style for Publication
-    figs = calcFigSize()
-    plt.style.use(STYLE_PATH)
-
-    fig, ax = plt.subplots(1,1,figsize = figs)
-
-    ax.imshow(image)
-    ax.set_title(title)
-    ax.set_xlabel('Right Ascension (Hours)')
-    ax.set_ylabel('Declination')
-    ax.set_ylim(485,125)
-    plt.xticks([])
-    plt.yticks([])
-    for key, spine in ax.spines.items():
-        spine.set_visible(False)
-    # ax.get_xaxis().set_visible(False)
-    # ax.get_yaxis().set_visible(False)
-    plt.tight_layout()
-    plt.savefig('/home/cat-work/pictures/swarmsources_replot2.png')
-    plt.show()
-
-    return
 
 if __name__ == "__main__":
     main_targs, extra_targs = main()
@@ -223,3 +166,31 @@ if __name__ == "__main__":
 # plt.legend()
 # plt.show()
 
+## Blocky Robinson projection
+# # Cartopy
+# trnsf = ccrs.Robinson()
+# fmt = FuncFormatter(lambda x,pos: round(Longitude(x, unit=u.deg).hour))
+
+# fig2,ax = plt.subplots(figsize=figs, subplot_kw={'projection':trnsf}) #layout='constrained')
+
+# ax.set_extent([-180, 180, -40,90],crs=ccrs.PlateCarree())
+# gl = ax.gridlines(draw_labels=True, x_inline=False, y_inline=False, linewidth=0.4,alpha=0.7, linestyle='--')
+# gl.xlocator = mticker.FixedLocator(np.arange(-180,180,15))
+# gl.top_labels = False
+# gl.xformatter=fmt
+# gl.yformatter = LatitudeFormatter(direction_label=False)
+# gl.xlabel_style = {'fontsize': 8}
+# gl.ylabel_style = {'fontsize': 8}
+
+
+# ax.xaxis.set_major_formatter(lambda x,pos: Angle(x).hour)
+# #ax.set_title(title)
+# ax.scatter(main_targs.ra.value,main_targs.dec.value,c='k',label='Observed',s=1, transform=ccrs.PlateCarree())
+# ax.scatter(extra_targs.ra.value, extra_targs.dec.value, c='r', label='Unobserved',s=1, transform=ccrs.PlateCarree())
+# ax.set_title('LWA Swarm Calibrator Survey Targets')
+
+# plt.gcf().text(0.465, 0.22, 'RA (J2000)', fontsize=8)
+# plt.gcf().text(0.055, 0.42,'DEC (J2000)', rotation='vertical', fontsize=8)
+# plt.legend(loc=(0.9,0.9))
+# # plt.savefig('/home/cat-work/pictures/swarmsources_robinson_legend5.png')
+# plt.show()
