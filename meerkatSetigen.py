@@ -215,8 +215,6 @@ def injectSignal(h5_source, injected_signals):
     return print('done')
 
 
-
-
 if __name__ == "__main__":
     # data_corrected, hann_corrected = plot_waterfall(chan_file = '/mnt/d/data1/meerkat_test_data/channel_response_meerkat_131072_16.f32')
     
@@ -233,13 +231,6 @@ if __name__ == "__main__":
         data = hd['data'][:]
         mask = hd['mask'][:]
 
-    # Build Main object
-    # wf = blimpy.Waterfall(h5_source)
-    # main_frame = setigen.Frame(waterfall=wf)
-
-    ### Build Signal(s)
-    ## We will need a dataframe with these columns, then we can iteratate by row
-    
     # This would be chosen specifically for the test case, here I am just looking near the window
     test_channel = 216051
     inj_f_starts = (test_channel + np.array([1,2,3]) * 10) * data_attrs['foff'] + data_attrs['fch1'] # first signal is at f = 54.004850 MHz
@@ -260,64 +251,6 @@ if __name__ == "__main__":
     injection_test = pd.DataFrame(data = inj_data)
     injectSignal(h5_source, injection_test)
 
-    """
-    win_means = []
-    win_stds = []
-    for i, row in injection_test.iterrows():
-        print(f'injection frequency {row.inj_f_start}')
-
-        # left and right bounds of a section to window for statistics (twice as wide in freq as time)
-        f_upper_bound = row.inj_f_start + (data_attrs['foff'] * n_drift_steps)
-        f_lower_bound = row.inj_f_start - (data_attrs['foff'] * n_drift_steps)
-        
-        ### Inject Signals
-        ## Do I need to adjust for the bandpass? Or can I use the local noise stats?
-
-        # Build Window Object
-        data_window = blimpy.Waterfall(h5_source,
-                                    f_start = f_lower_bound,
-                                    f_stop = f_upper_bound)
-        window_frame = setigen.Frame(data_window)
-
-        # get statistics from window, then adjust snr
-        win_freq, _ = data_window.grab_data()
-        inj_win_mean, inj_win_std = window_frame.get_noise_stats()
-        win_means.append(inj_win_mean)  
-        win_stds.append(inj_win_std)
-        intensity_at_snr = window_frame.get_intensity(snr = row.inj_snr)
-        
-        # add_signal
-        signal = main_frame.add_signal(
-            path = setigen.constant_path(f_start = row.inj_f_start * u.MHz,
-                                        drift_rate = row.inj_drift_rate * u.Hz/u.s),
-            t_profile = setigen.constant_t_profile(level=intensity_at_snr), 
-            f_profile = setigen.box_f_profile(width = row.inj_width * u.Hz),
-            bounding_f_range = (f_lower_bound * u.MHz, f_upper_bound * u.MHz),
-            # doppler_smearing = True, 
-            # smearing_subsamples = 1
-        )
-
-    ### Write to outfile
-    out_filename = h5_source.split('.h5')[0] + '_sigInject.h5'
-    main_frame.save_h5(out_filename)
-
-    ### Add Signal Metadata as new dataset
-    with h5py.File(out_filename, 'a') as f:
-        # Create Setigen Group
-        grp = f.create_group("setigen")
-
-        # Create datasets within the group
-        grp.create_dataset("start_frequency", data= injection_test.inj_f_start.values )
-        grp.create_dataset("drift_rate", data= injection_test.inj_drift_rate.values )
-        grp.create_dataset("zscore", data= injection_test.inj_snr.values )
-        grp.create_dataset("signal_width", data= injection_test.inj_width.values )
-        grp.create_dataset("snr_db", data= db(injection_test.inj_snr.values) )
-        grp.create_dataset("noise_mean", data= np.array(win_means) ) # -> from window_frame.get_noise_stats()
-        grp.create_dataset("noise_std", data= np.array(win_stds) ) # -> from window_frame.get_noise_stats()
-
-
-    ### Plot the Signals Injected
-    """
     ### Validation Check
     with h5py.File(out_filename, 'r') as hd2:
         validation = hd2['data'][:]

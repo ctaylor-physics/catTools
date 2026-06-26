@@ -379,8 +379,6 @@ def plot_coherent_timeseries(stamp, src_name):
     return
 
 
-
-
 # Next steps:
 # 1. Are the start and stop frequencies the same in all antenna
 # 2. Does the amplitude vs time stay relatively consistent across all antenna

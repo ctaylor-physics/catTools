@@ -68,6 +68,7 @@ def find_outlier_antennas(obs_info, out_dir = None):
     print(f"stamp source name: {srcName}")
     out_fn = os.path.join(out_dir,
                           f"{srcName}_id{obs_info.id}_{round(obs_info.signal_frequency,5)}MHz")
+    
     ## ant_pow[antenna][timestep][channel] Sums along pol and real/image axes
     ant_pow = np.square(stamp.real_array()).sum(axis=(2, 4)).transpose(2,0,1) 
     sig_mask = stamp.signal_mask()
