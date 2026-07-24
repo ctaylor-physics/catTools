@@ -78,8 +78,6 @@ def dedrift_stamp(stamp, upchannelisation_rate = 1, mask=False):
     
     return ddStamp
 
-
-
 def correlate_stamp(ddStampData):
     """
     From seticore/viewer.py:

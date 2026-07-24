@@ -9,7 +9,7 @@ import seaborn
 from utils import STYLE_PATH, calcFigSize, get_colors
 
 import glob
-from cosmic_utils import look_for_combs, log_with_pandas
+from catTools.cosmic_utils import look_for_combs, log_with_pandas
 from scipy.stats import median_abs_deviation
 from seticore import viewer
 from cosmic_database_analysis import sarfi
